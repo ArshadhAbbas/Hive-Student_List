@@ -10,7 +10,7 @@ class DisplayStudent extends StatelessWidget {
   final String number;
   final String photo;
   final int index;
-  DisplayStudent({
+  const DisplayStudent({
     super.key,
     required this.name,
     required this.age,
@@ -25,21 +25,21 @@ class DisplayStudent extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title:Text('Student Details'),
+        title:const Text('Student Details'),
       ),
       body: SafeArea(
         child: SingleChildScrollView(
           child: Padding(
-            padding:  EdgeInsets.all(20),
+            padding:  const EdgeInsets.all(20),
             child: Column(
               children: [
-                 Center(
+                 const Center(
                   child: Text(
                     'Student Full Details',
                     style: TextStyle(fontSize: 25, color: Color(0xFF284350)),
                   ),
                 ),
-                SizedBox(
+                const SizedBox(
                   height: 30,
                 ),
                 CircleAvatar(
@@ -50,39 +50,39 @@ class DisplayStudent extends StatelessWidget {
                     ),
                   ),
                 ),
-                SizedBox(
+                const SizedBox(
                   height: 10,
                 ),
                 Text(
                   'Name: $name',
-                  style:  TextStyle(
+                  style:  const TextStyle(
                     fontSize: 20,
                   ),
                 ),
-                SizedBox(
+                const SizedBox(
                   height: 10,
                 ),
                 Text(
                   'Age: $age',
-                  style: TextStyle(
+                  style: const TextStyle(
                     fontSize: 20,
                   ),
                 ),
-                SizedBox(
+                const SizedBox(
                   height: 10,
                 ),
                 Text(
                   'Address: $address',
-                  style: TextStyle(
+                  style: const TextStyle(
                     fontSize: 20,
                   ),
                 ),
-                 SizedBox(
+                 const SizedBox(
                   height: 10,
                 ),
                 Text(
                   'Phone Number: $number',
-                  style: TextStyle(
+                  style: const TextStyle(
                     fontSize: 20,
                   ),
                 ),
@@ -97,11 +97,11 @@ class DisplayStudent extends StatelessWidget {
                             number: number,
                             index: index,
                             image: photo,
-                            photo: '');
+                            );
                       })));
                     }),
-                    icon:  Icon(Icons.edit),
-                    label:  Text('Edit'))
+                    icon:  const Icon(Icons.edit),
+                    label:  const Text('Edit'))
               ],
             ),
           ),

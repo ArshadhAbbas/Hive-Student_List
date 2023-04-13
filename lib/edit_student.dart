@@ -1,8 +1,12 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:hive_project/data_model.dart';
-import 'package:hive_project/db_function.dart';
+import 'package:hive_project/database/db_functions/db_function_provider.dart';
+import 'package:hive_project/home_screen.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:provider/provider.dart';
+
+import 'database/db_model/data_model.dart';
 
 class EditStudent extends StatefulWidget {
   final String name;
@@ -20,7 +24,7 @@ class EditStudent extends StatefulWidget {
     required this.number,
     required this.index,
     required this.image,
-    required String photo,
+    // required String photo,
   });
 
   @override
@@ -49,37 +53,53 @@ class _EditStudentState extends State<EditStudent> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Edit'),
+        title: const Text('Edit'),
       ),
       body: SafeArea(
         child: SingleChildScrollView(
           child: Form(
               key: _formkey,
               child: Padding(
-                padding: EdgeInsets.all(25.0),
+                padding: const EdgeInsets.all(25.0),
                 child: Column(
                   children: [
-                    Text(
+                    const Text(
                       'Edit student details',
                       style: TextStyle(fontSize: 20),
                     ),
-                    SizedBox(
+                    const SizedBox(
                       height: 20,
                     ),
-                    ElevatedButton(
-                        onPressed: () {}, child: Text("Change image")),
-                    CircleAvatar(
-                      radius: 80,
-                      backgroundImage: FileImage(
-                        File(widget.image),
+                    Stack(children: [
+                      CircleAvatar(
+                        radius: 80,
+                        backgroundImage: _photo?.path == null
+                            ? FileImage(
+                                File(widget.image),
+                              )
+                            : FileImage(
+                                File(
+                                  _photo!.path,
+                                ),
+                              ),
                       ),
-                    ),
-                    SizedBox(
+                      Positioned(
+                          bottom: 0,
+                          right: 0,
+                          child: CircleAvatar(
+                            child: IconButton(
+                                onPressed: () {
+                                  getPhoto();
+                                },
+                                icon: Icon(Icons.edit)),
+                          ))
+                    ]),
+                    const SizedBox(
                       height: 20,
                     ),
                     TextFormField(
                       controller: _nameOfStudent,
-                      decoration: InputDecoration(
+                      decoration: const InputDecoration(
                         border: OutlineInputBorder(),
                         hintText: '',
                         labelText: 'Name',
@@ -92,14 +112,14 @@ class _EditStudentState extends State<EditStudent> {
                         }
                       },
                     ),
-                    SizedBox(
+                    const SizedBox(
                       height: 20,
                     ),
                     TextFormField(
                       maxLength: 2,
                       controller: _ageOfStudent,
                       keyboardType: TextInputType.number,
-                      decoration: InputDecoration(
+                      decoration: const InputDecoration(
                         border: OutlineInputBorder(),
                         hintText: 'Enter your age',
                         labelText: 'Age',
@@ -112,12 +132,12 @@ class _EditStudentState extends State<EditStudent> {
                         }
                       },
                     ),
-                    SizedBox(
+                    const SizedBox(
                       height: 20,
                     ),
                     TextFormField(
                       controller: _addressOfStudent,
-                      decoration: InputDecoration(
+                      decoration: const InputDecoration(
                         border: OutlineInputBorder(),
                         hintText: 'Enter your address',
                         labelText: 'Address',
@@ -130,13 +150,13 @@ class _EditStudentState extends State<EditStudent> {
                         }
                       },
                     ),
-                    SizedBox(
+                    const SizedBox(
                       height: 20,
                     ),
                     TextFormField(
                       controller: _phnOfStudent,
                       keyboardType: TextInputType.number,
-                      decoration: InputDecoration(
+                      decoration: const InputDecoration(
                         border: OutlineInputBorder(),
                         hintText: 'Phone number',
                         labelText: 'Number',
@@ -156,11 +176,13 @@ class _EditStudentState extends State<EditStudent> {
                           onPressed: () {
                             if (_formkey.currentState!.validate()) {
                               onEditSaveButton(context);
-                              Navigator.of(context).pop();
+                              Navigator.of(context).push(MaterialPageRoute(
+                                builder: (context) => HomeScreen(),
+                              ));
                             }
                           },
-                          icon: Icon(Icons.check),
-                          label: Text('Save'),
+                          icon: const Icon(Icons.check),
+                          label: const Text('Save'),
                         ),
                       ],
                     ),
@@ -173,15 +195,16 @@ class _EditStudentState extends State<EditStudent> {
   }
 
   Future<void> onEditSaveButton(ctx) async {
+    var photoPath = _photo == null ? widget.image : _photo!.path;
     final studentmodel = StudentModel(
       name: _nameOfStudent.text,
       age: _ageOfStudent.text,
       phnNumber: _phnOfStudent.text,
       address: _addressOfStudent.text,
-      photo: widget.image,
+      photo: photoPath,
     );
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
+      const SnackBar(
         behavior: SnackBarBehavior.floating,
         margin: EdgeInsets.all(30),
         backgroundColor: Colors.blueGrey,
@@ -194,6 +217,21 @@ class _EditStudentState extends State<EditStudent> {
         ),
       ),
     );
-    editList(widget.index, studentmodel);
+    Provider.of<StudentProvider>(context, listen: false)
+        .editList(widget.index, studentmodel);
+  }
+
+  File? _photo;
+  Future<void> getPhoto() async {
+    final photo = await ImagePicker().pickImage(source: ImageSource.gallery);
+    if (photo == null) {
+      return;
+    } else {
+      setState(
+        () {
+          _photo = File(photo.path);
+        },
+      );
+    }
   }
 }

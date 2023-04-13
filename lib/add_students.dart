@@ -1,9 +1,12 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:hive_project/data_model.dart';
-import 'package:hive_project/db_function.dart';
 import 'package:image_picker/image_picker.dart';
+
+import 'package:hive_project/database/db_functions/db_function_provider.dart';
+import 'package:provider/provider.dart';
+
+import 'database/db_model/data_model.dart';
 
 class AddStudentClass extends StatefulWidget {
   const AddStudentClass({Key? key}) : super(key: key);
@@ -23,42 +26,42 @@ class _AddStudentClassState extends State<AddStudentClass> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Add Student details'),
+        title: const Text('Add Student details'),
       ),
       body: SingleChildScrollView(
         child: Padding(
-          padding: EdgeInsets.all(20.0),
+          padding: const EdgeInsets.all(20.0),
           child: Form(
             key: _formKey,
             child: Column(
               children: [
-                _photo?.path == null
-                    ? CircleAvatar(
+                _photo == null
+                    ? const CircleAvatar(
                         radius: 80,
                         backgroundImage: NetworkImage(
-                            "https://icon-library.com/images/person-head-icon/person-head-icon-27.jpg"))
+                            "https://cdn.onlinewebfonts.com/svg/img_561160.png"))
                     : CircleAvatar(
                         backgroundImage: FileImage(
                           File(
-                            _photo!.path,
+                            _photo!,
                           ),
                         ),
-                        radius: 60,
+                        radius: 80,
                       ),
                 ElevatedButton.icon(
                   onPressed: () {
                     getPhoto();
                   },
-                  icon: Icon(
+                  icon: const Icon(
                     Icons.image_outlined,
                   ),
-                  label: Text(
+                  label: const Text(
                     'Add An Image',
                   ),
                 ),
                 TextFormField(
                   controller: _nameOfStudent,
-                  decoration: InputDecoration(
+                  decoration: const InputDecoration(
                     border: OutlineInputBorder(),
                     hintText: 'Enter student Name',
                     labelText: 'Name',
@@ -71,13 +74,14 @@ class _AddStudentClassState extends State<AddStudentClass> {
                     }
                   },
                 ),
-                SizedBox(
+                const SizedBox(
                   height: 20,
                 ),
                 TextFormField(
+                  maxLength: 2,
                   controller: _ageOfStudent,
                   keyboardType: TextInputType.number,
-                  decoration: InputDecoration(
+                  decoration: const InputDecoration(
                     border: OutlineInputBorder(),
                     hintText: 'Enter age',
                     labelText: 'age',
@@ -90,11 +94,13 @@ class _AddStudentClassState extends State<AddStudentClass> {
                     }
                   },
                 ),
-                SizedBox(height: 20,),
+                const SizedBox(
+                  height: 20,
+                ),
                 TextFormField(
                   controller: _addressOfStudent,
                   maxLines: 3,
-                  decoration: InputDecoration(
+                  decoration: const InputDecoration(
                     border: OutlineInputBorder(),
                     hintText: 'Enter address',
                     labelText: 'address',
@@ -107,20 +113,20 @@ class _AddStudentClassState extends State<AddStudentClass> {
                     }
                   },
                 ),
-                SizedBox(
+                const SizedBox(
                   height: 20,
                 ),
                 TextFormField(
                   controller: _phnOfStudent,
                   keyboardType: TextInputType.number,
-                  decoration: InputDecoration(
+                  decoration: const InputDecoration(
                     border: OutlineInputBorder(),
                     hintText: 'Enter the number',
                     labelText: 'number',
                   ),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
-                      return 'required';
+                      return 'Number is required';
                     } else {
                       return null;
                     }
@@ -135,8 +141,8 @@ class _AddStudentClassState extends State<AddStudentClass> {
                         imageAlert = true;
                       }
                     }),
-                    icon: Icon(Icons.add),
-                    label: Text('Add student'))
+                    icon: const Icon(Icons.add),
+                    label: const Text('Add student'))
               ],
             ),
           ),
@@ -150,25 +156,25 @@ class _AddStudentClassState extends State<AddStudentClass> {
     final age = _ageOfStudent.text.trim();
     final address = _addressOfStudent.text.trim();
     final number = _phnOfStudent.text.trim();
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          behavior: SnackBarBehavior.floating,
-          margin: EdgeInsets.all(20),
-          content: Text("Student added Successfully"),
-        ),
-      );
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        behavior: SnackBarBehavior.floating,
+        margin: EdgeInsets.all(20),
+        content: Text("Student added Successfully"),
+      ),
+    );
     // }
     final student = StudentModel(
       name: name,
       age: age,
       phnNumber: number,
       address: address,
-      photo: _photo!.path,
+      photo: _photo!,
     );
-    addStudent(student);
+    Provider.of<StudentProvider>(context, listen: false).addStudent(student);
   }
 
-  File? _photo;
+  String? _photo;
   Future<void> getPhoto() async {
     final photo = await ImagePicker().pickImage(source: ImageSource.gallery);
     if (photo == null) {
@@ -176,7 +182,7 @@ class _AddStudentClassState extends State<AddStudentClass> {
     } else {
       setState(
         () {
-          _photo = File(photo.path);
+          _photo = photo.path;
         },
       );
     }

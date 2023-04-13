@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+
 import 'package:hive_project/add_students.dart';
-import 'package:hive_project/db_function.dart';
+import 'package:hive_project/database/db_functions/db_function_provider.dart';
 import 'package:hive_project/search_screen.dart';
 import 'package:hive_project/students_list.dart';
 
@@ -14,36 +16,40 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
-    getallstudents();
+    Provider.of<StudentProvider>(context).getallstudents();
     return Scaffold(
       appBar: AppBar(
-        title: Text('Students List'),
+        elevation: 0,
+        title: const Text('Student Record'),
         actions: <Widget>[
           IconButton(
-            icon:  Icon(Icons.add),
+             onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) {
+                return const AddStudentClass();
+              },
+            ),
+          );
+        },
+            icon: const CircleAvatar(
+                backgroundColor: Colors.white, child: Icon(Icons.add)),
+                tooltip: "Add new",
+          ),
+          IconButton(
+            icon: const Icon(Icons.search),
             onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) {
-                    return AddStudentClass();
-                  },
-                ),
+              showSearch(
+                context: context,
+                delegate: SearchWidget(),
               );
             },
+            tooltip: "Search",
           ),
         ],
       ),
-      body: ListStudents(),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          showSearch(
-            context: context,
-            delegate: SearchWidget(),
-          );
-        },
-        child:Icon(Icons.search),
-      ),
+      body: const ListStudents(),
     );
   }
 }

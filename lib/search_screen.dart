@@ -1,19 +1,16 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:hive_project/data_model.dart';
-import 'package:hive_project/db_function.dart';
-import 'package:hive_project/display_student_screen.dart';
+import 'package:provider/provider.dart';
+
+import 'package:hive_project/database/db_functions/db_function_provider.dart';
 import 'package:hive_project/students_list.dart';
 
 class SearchWidget extends SearchDelegate {
   @override
   ThemeData appBarTheme(BuildContext context) {
-    assert(context != null);
     final ThemeData theme = Theme.of(context);
-    assert(theme != null);
     return theme;
-    
   }
 
   @override
@@ -33,99 +30,89 @@ class SearchWidget extends SearchDelegate {
     return IconButton(
       icon: const Icon(Icons.arrow_back),
       onPressed: () {
-        close(context, null); 
+        close(context, null);
       },
     );
   }
 
   @override
   Widget buildResults(BuildContext context) {
-    return ValueListenableBuilder(
-      valueListenable: studentListNotifier,
-      builder: ((BuildContext context, List<StudentModel> studentList,
-          Widget? child) {
-        return ListView.builder(
-          itemBuilder: (ctx, index) {
-            final data = studentList[index];
-            if (data.name.toLowerCase().contains(query.toLowerCase().trim())) {
+    final studentListProvider = Provider.of<StudentProvider>(context);
+    final searchResults = studentListProvider.studentList
+        .where((student) =>
+            student.name.toLowerCase().contains(query.toLowerCase().trim()))
+        .toList();
+    return searchResults.isEmpty
+        ? const Center(
+            child: Text('No Data Found'),
+          )
+        : ListView.builder(
+            itemCount: searchResults.length,
+            itemBuilder: (ctx, index) {
+              final data = searchResults[index];
               return Column(
                 children: [
-                  ListTile(
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: ((context) {
-                            return ListStudents();
-                          }),
-                        ),
-                      );
-                    },
-                    title: Text(data.name),
-                    leading: CircleAvatar(
-                      backgroundImage: FileImage(File(data.photo)),
+                  Card(
+                    child: ListTile(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: ((context) {
+                              return const ListStudents();
+                            }),
+                          ),
+                        );
+                      },
+                      title: Text(data.name),
+                      leading: CircleAvatar(
+                        backgroundImage: FileImage(File(data.photo)),
+                      ),
                     ),
                   ),
-                  Divider()
+                  const Divider()
                 ],
               );
-            } else {
-              return Container();
-            }
-          },
-          itemCount: studentList.length,
-        );
-      }),
-    );
+            },
+          );
   }
 
   @override
   Widget buildSuggestions(BuildContext context) {
-    return ValueListenableBuilder(
-      valueListenable: studentListNotifier,
-      builder: ((BuildContext context, List<StudentModel> studentList,
-          Widget? child) {
-        return ListView.builder(
-           itemCount: studentList.length,
-          itemBuilder: (ctx, index) {
-            final data = studentList[index];
-            if (data.name.toLowerCase().contains(query.toLowerCase().trim())) {
+    final studentListProvider = Provider.of<StudentProvider>(context);
+    final searchResults = studentListProvider.studentList
+        .where((student) =>
+            student.name.toLowerCase().contains(query.toLowerCase().trim()))
+        .toList();
+    return searchResults.isEmpty
+        ? ListView(
+          children: const [
+            Card(
+              child: ListTile(
+                leading: CircleAvatar(backgroundColor: Colors.transparent,),
+                title: Text("No Matching result"),
+              ),
+            )
+          ],
+        )
+        : ListView.builder(
+            itemCount: searchResults.length,
+            itemBuilder: (ctx, index) {
+              final data = searchResults[index];
               return Column(
                 children: [
-                  ListTile(
-                    onTap: () {
-                      Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: ((context) {
-                            return DisplayStudent(
-                                name: data.name,
-                                age: data.age,
-                                address: data.address,
-                                number: data.phnNumber,
-                                index: index,
-                                photo: data.photo);
-                          }),
-                        ),
-                      );
-                    },
-                    title: Text(data.name),
-                    leading: CircleAvatar(
-                      backgroundImage: FileImage(File(data.photo)),
+                  Card(
+                    child: ListTile(
+                      title: Text(data.name),
+                      leading: CircleAvatar(
+                        backgroundImage: FileImage(File(data.photo)),
+                      ),
                     ),
                   ),
-                  Divider()
+                  const Divider()
                 ],
               );
-            } else {
-              return Container(
-                child: Center(child: Text("NO result found")),
-              );
-            }
-          },
-         
-        );
-      }),
-    );
+            },
+          );
   }
 }
-
