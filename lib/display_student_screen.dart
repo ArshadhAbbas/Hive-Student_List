@@ -1,7 +1,9 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:hive_project/database/db_functions/db_function_provider.dart';
 import 'package:hive_project/edit_student.dart';
+import 'package:provider/provider.dart';
 
 class DisplayStudent extends StatelessWidget {
   final String name;
@@ -25,18 +27,23 @@ class DisplayStudent extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title:const Text('Student Details'),
+        title: const Text('Details'),
       ),
       body: SafeArea(
         child: SingleChildScrollView(
           child: Padding(
-            padding:  const EdgeInsets.all(20),
+            padding: const EdgeInsets.all(20),
             child: Column(
               children: [
-                 const Center(
+                Center(
                   child: Text(
-                    'Student Full Details',
-                    style: TextStyle(fontSize: 25, color: Color(0xFF284350)),
+                    Provider.of<StudentProvider>(context)
+                        .studentList[index]
+                        .name,
+                    style: const TextStyle(
+                        fontSize: 25,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF284350)),
                   ),
                 ),
                 const SizedBox(
@@ -55,7 +62,7 @@ class DisplayStudent extends StatelessWidget {
                 ),
                 Text(
                   'Name: $name',
-                  style:  const TextStyle(
+                  style: const TextStyle(
                     fontSize: 20,
                   ),
                 ),
@@ -77,7 +84,7 @@ class DisplayStudent extends StatelessWidget {
                     fontSize: 20,
                   ),
                 ),
-                 const SizedBox(
+                const SizedBox(
                   height: 10,
                 ),
                 Text(
@@ -91,17 +98,17 @@ class DisplayStudent extends StatelessWidget {
                       Navigator.of(context)
                           .push(MaterialPageRoute(builder: ((context) {
                         return EditStudent(
-                            name: name,
-                            age: age,
-                            address: address,
-                            number: number,
-                            index: index,
-                            image: photo,
-                            );
+                          name: name,
+                          age: age,
+                          address: address,
+                          number: number,
+                          index: index,
+                          image: photo,
+                        );
                       })));
                     }),
-                    icon:  const Icon(Icons.edit),
-                    label:  const Text('Edit'))
+                    icon: const Icon(Icons.edit),
+                    label: const Text('Edit'))
               ],
             ),
           ),

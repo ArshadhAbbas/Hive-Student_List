@@ -1,7 +1,8 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
+import 'package:hive_project/provider/photo_provider.dart.dart';
+import 'package:hive_project/provider/widget_provider.dart';
 
 import 'package:hive_project/database/db_functions/db_function_provider.dart';
 import 'package:provider/provider.dart';
@@ -10,12 +11,17 @@ import 'database/db_model/data_model.dart';
 
 class AddStudentClass extends StatefulWidget {
   const AddStudentClass({Key? key}) : super(key: key);
-
   @override
   State<AddStudentClass> createState() => _AddStudentClassState();
 }
 
 class _AddStudentClassState extends State<AddStudentClass> {
+  @override
+  void initState() {
+    context.read<WidgetFunctionProvider>().photo = null;
+    super.initState();
+  }
+
   final _nameOfStudent = TextEditingController();
   final _ageOfStudent = TextEditingController();
   final _addressOfStudent = TextEditingController();
@@ -33,117 +39,98 @@ class _AddStudentClassState extends State<AddStudentClass> {
           padding: const EdgeInsets.all(20.0),
           child: Form(
             key: _formKey,
-            child: Column(
-              children: [
-                _photo == null
-                    ? const CircleAvatar(
-                        radius: 80,
-                        backgroundImage: NetworkImage(
-                            "https://cdn.onlinewebfonts.com/svg/img_561160.png"))
-                    : CircleAvatar(
-                        backgroundImage: FileImage(
-                          File(
-                            _photo!,
+            child: Consumer<WidgetFunctionProvider>(
+              builder: (context, photoProvider, child) => Column(
+                children: [
+                  photoProvider.photo == null
+                      ? Stack(children: [
+                          const CircleAvatar(
+                              radius: 80,
+                              backgroundImage: NetworkImage(
+                                  "https://cdn.onlinewebfonts.com/svg/img_561160.png")),
+                          Positioned(
+                              bottom: 0,
+                              right: 0,
+                              child: CircleAvatar(
+                                child: IconButton(
+                                    onPressed: () async {
+                                      await context
+                                          .read<WidgetFunctionProvider>()
+                                          .getPhoto();
+                                    },
+                                    icon: const Icon(Icons.add)),
+                              ))
+                        ])
+                      : Stack(children: [
+                          CircleAvatar(
+                            backgroundImage: FileImage(
+                              File(
+                                photoProvider.photo!,
+                              ),
+                            ),
+                            radius: 80,
                           ),
-                        ),
-                        radius: 80,
-                      ),
-                ElevatedButton.icon(
-                  onPressed: () {
-                    getPhoto();
-                  },
-                  icon: const Icon(
-                    Icons.image_outlined,
+                          Positioned(
+                              bottom: 0,
+                              right: 0,
+                              child: CircleAvatar(
+                                child: IconButton(
+                                    onPressed: () async {
+                                      await context
+                                          .read<WidgetFunctionProvider>()
+                                          .getPhoto();
+                                    },
+                                    icon: const Icon(Icons.edit)),
+                              ))
+                        ]),
+                  const SizedBox(
+                    height: 20,
                   ),
-                  label: const Text(
-                    'Add An Image',
+                  Provider.of<WidgetProvider>(context).textField(
+                    fieldcontroller: _nameOfStudent,
+                    hintText: "Enter Name",
+                    labelText: "Name",
                   ),
-                ),
-                TextFormField(
-                  controller: _nameOfStudent,
-                  decoration: const InputDecoration(
-                    border: OutlineInputBorder(),
-                    hintText: 'Enter student Name',
-                    labelText: 'Name',
+                  const SizedBox(
+                    height: 20,
                   ),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return ' Name is Required';
-                    } else {
-                      return null;
-                    }
-                  },
-                ),
-                const SizedBox(
-                  height: 20,
-                ),
-                TextFormField(
-                  maxLength: 2,
-                  controller: _ageOfStudent,
-                  keyboardType: TextInputType.number,
-                  decoration: const InputDecoration(
-                    border: OutlineInputBorder(),
-                    hintText: 'Enter age',
-                    labelText: 'age',
+                  Provider.of<WidgetProvider>(context).textField(
+                      fieldcontroller: _ageOfStudent,
+                      hintText: "Enter Your Age",
+                      labelText: "Age",
+                      maxLength: 2,
+                      keyboardType: TextInputType.number),
+                  const SizedBox(
+                    height: 20,
                   ),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return ' Age is Required';
-                    } else {
-                      return null;
-                    }
-                  },
-                ),
-                const SizedBox(
-                  height: 20,
-                ),
-                TextFormField(
-                  controller: _addressOfStudent,
-                  maxLines: 3,
-                  decoration: const InputDecoration(
-                    border: OutlineInputBorder(),
-                    hintText: 'Enter address',
-                    labelText: 'address',
+                  Provider.of<WidgetProvider>(context).textField(
+                      fieldcontroller: _addressOfStudent,
+                      hintText: "Enter Your Address",
+                      maxLines: 3,
+                      labelText: "Address"),
+                  const SizedBox(
+                    height: 20,
                   ),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return ' Address is Required';
-                    } else {
-                      return null;
-                    }
-                  },
-                ),
-                const SizedBox(
-                  height: 20,
-                ),
-                TextFormField(
-                  controller: _phnOfStudent,
-                  keyboardType: TextInputType.number,
-                  decoration: const InputDecoration(
-                    border: OutlineInputBorder(),
-                    hintText: 'Enter the number',
-                    labelText: 'number',
+                  Provider.of<WidgetProvider>(context).textField(
+                    fieldcontroller: _phnOfStudent,
+                    hintText: "Phone Number",
+                    keyboardType: TextInputType.number,
+                    labelText: "Number",
                   ),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Number is required';
-                    } else {
-                      return null;
-                    }
-                  },
-                ),
-                ElevatedButton.icon(
-                    onPressed: (() {
-                      if (_formKey.currentState!.validate() && _photo != null) {
-                        onStudentAddButtonClick();
-                        Navigator.of(context).pop();
-                      } else {
-                        imageAlert = true;
-                      }
-                    }),
-                    icon: const Icon(Icons.add),
-                    label: const Text('Add student'))
-              ],
+                  ElevatedButton.icon(
+                      onPressed: (() {
+                        if (_formKey.currentState!.validate() &&
+                            photoProvider.photo != null) {
+                          onStudentAddButtonClick();
+                          Navigator.of(context).pop();
+                        } else {
+                          imageAlert = true;
+                        }
+                      }),
+                      icon: const Icon(Icons.add),
+                      label: const Text('Add student'))
+                ],
+              ),
             ),
           ),
         ),
@@ -163,28 +150,14 @@ class _AddStudentClassState extends State<AddStudentClass> {
         content: Text("Student added Successfully"),
       ),
     );
-    // }
+
     final student = StudentModel(
       name: name,
       age: age,
       phnNumber: number,
       address: address,
-      photo: _photo!,
+      photo: context.read<WidgetFunctionProvider>().photo!,
     );
-    Provider.of<StudentProvider>(context, listen: false).addStudent(student);
-  }
-
-  String? _photo;
-  Future<void> getPhoto() async {
-    final photo = await ImagePicker().pickImage(source: ImageSource.gallery);
-    if (photo == null) {
-      return;
-    } else {
-      setState(
-        () {
-          _photo = photo.path;
-        },
-      );
-    }
+    context.read<StudentProvider>().addStudent(student);
   }
 }

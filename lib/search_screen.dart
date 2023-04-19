@@ -6,6 +6,8 @@ import 'package:provider/provider.dart';
 import 'package:hive_project/database/db_functions/db_function_provider.dart';
 import 'package:hive_project/students_list.dart';
 
+import 'display_student_screen.dart';
+
 class SearchWidget extends SearchDelegate {
   @override
   ThemeData appBarTheme(BuildContext context) {
@@ -86,15 +88,17 @@ class SearchWidget extends SearchDelegate {
         .toList();
     return searchResults.isEmpty
         ? ListView(
-          children: const [
-            Card(
-              child: ListTile(
-                leading: CircleAvatar(backgroundColor: Colors.transparent,),
-                title: Text("No Matching result"),
-              ),
-            )
-          ],
-        )
+            children: const [
+              Card(
+                child: ListTile(
+                  leading: CircleAvatar(
+                    backgroundColor: Colors.transparent,
+                  ),
+                  title: Text("No Matching result"),
+                ),
+              )
+            ],
+          )
         : ListView.builder(
             itemCount: searchResults.length,
             itemBuilder: (ctx, index) {
@@ -103,6 +107,21 @@ class SearchWidget extends SearchDelegate {
                 children: [
                   Card(
                     child: ListTile(
+                      onTap: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: ((context) {
+                              return DisplayStudent(
+                                  name: data.name,
+                                  age: data.age,
+                                  address: data.address,
+                                  number: data.phnNumber,
+                                  index: index,
+                                  photo: data.photo);
+                            }),
+                          ),
+                        );
+                      },
                       title: Text(data.name),
                       leading: CircleAvatar(
                         backgroundImage: FileImage(File(data.photo)),

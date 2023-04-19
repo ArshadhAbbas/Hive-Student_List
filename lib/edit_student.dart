@@ -3,7 +3,8 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:hive_project/database/db_functions/db_function_provider.dart';
 import 'package:hive_project/home_screen.dart';
-import 'package:image_picker/image_picker.dart';
+import 'package:hive_project/provider/photo_provider.dart.dart';
+import 'package:hive_project/provider/widget_provider.dart';
 import 'package:provider/provider.dart';
 
 import 'database/db_model/data_model.dart';
@@ -24,7 +25,6 @@ class EditStudent extends StatefulWidget {
     required this.number,
     required this.index,
     required this.image,
-    // required String photo,
   });
 
   @override
@@ -47,6 +47,7 @@ class _EditStudentState extends State<EditStudent> {
     _ageOfStudent = TextEditingController(text: widget.age);
     _addressOfStudent = TextEditingController(text: widget.address);
     _phnOfStudent = TextEditingController(text: widget.number);
+    context.read<WidgetFunctionProvider>().photo = null;
   }
 
   @override
@@ -70,104 +71,67 @@ class _EditStudentState extends State<EditStudent> {
                     const SizedBox(
                       height: 20,
                     ),
-                    Stack(children: [
-                      CircleAvatar(
-                        radius: 80,
-                        backgroundImage: _photo?.path == null
-                            ? FileImage(
-                                File(widget.image),
-                              )
-                            : FileImage(
-                                File(
-                                  _photo!.path,
+                    Consumer<WidgetFunctionProvider>(
+                      builder: (context, photoProvider, child)=> Stack(children: [
+                        CircleAvatar(
+                          radius: 80,
+                          backgroundImage:  photoProvider.photo == null
+                              ? FileImage(
+                                  File(widget.image),
+                                )
+                              : FileImage(
+                                  File(
+                                    photoProvider.photo!,
+                                  ),
                                 ),
-                              ),
-                      ),
-                      Positioned(
-                          bottom: 0,
-                          right: 0,
-                          child: CircleAvatar(
-                            child: IconButton(
-                                onPressed: () {
-                                  getPhoto();
-                                },
-                                icon: Icon(Icons.edit)),
-                          ))
-                    ]),
-                    const SizedBox(
-                      height: 20,
-                    ),
-                    TextFormField(
-                      controller: _nameOfStudent,
-                      decoration: const InputDecoration(
-                        border: OutlineInputBorder(),
-                        hintText: '',
-                        labelText: 'Name',
-                      ),
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Required Name';
-                        } else {
-                          return null;
-                        }
-                      },
+                        ),
+                        Positioned(
+                            bottom: 0,
+                            right: 0,
+                            child: CircleAvatar(
+                              child: IconButton(
+                                  onPressed: () async {
+                                      await context
+                                          .read<WidgetFunctionProvider>()
+                                          .getPhoto();
+                                    },
+                                  icon: const Icon(Icons.edit)),
+                            ))
+                      ]),
                     ),
                     const SizedBox(
                       height: 20,
                     ),
-                    TextFormField(
-                      maxLength: 2,
-                      controller: _ageOfStudent,
+                    Provider.of<WidgetProvider>(context).textField(
+                      fieldcontroller: _nameOfStudent,
+                      hintText: "Name",
+                      labelText: "Name",
+                    ),
+                    const SizedBox(
+                      height: 20,
+                    ),
+                    Provider.of<WidgetProvider>(context).textField(
+                        fieldcontroller: _ageOfStudent,
+                        hintText: "Enter Your Age",
+                        labelText: "Age",
+                        keyboardType: TextInputType.number,
+                        maxLength: 2),
+                    const SizedBox(
+                      height: 20,
+                    ),
+                    Provider.of<WidgetProvider>(context).textField(
+                        fieldcontroller: _addressOfStudent,
+                        hintText: "Enetr Your Address",
+                        maxLines: 3,
+                        labelText: "Address"),
+                    const SizedBox(
+                      height: 20,
+                    ),
+                    Provider.of<WidgetProvider>(context).textField(
+                      fieldcontroller: _phnOfStudent,
+                      hintText: "Phone Number",
                       keyboardType: TextInputType.number,
-                      decoration: const InputDecoration(
-                        border: OutlineInputBorder(),
-                        hintText: 'Enter your age',
-                        labelText: 'Age',
-                      ),
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Required Age';
-                        } else {
-                          return null;
-                        }
-                      },
-                    ),
-                    const SizedBox(
-                      height: 20,
-                    ),
-                    TextFormField(
-                      controller: _addressOfStudent,
-                      decoration: const InputDecoration(
-                        border: OutlineInputBorder(),
-                        hintText: 'Enter your address',
-                        labelText: 'Address',
-                      ),
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Required Address';
-                        } else {
-                          return null;
-                        }
-                      },
-                    ),
-                    const SizedBox(
-                      height: 20,
-                    ),
-                    TextFormField(
-                      controller: _phnOfStudent,
-                      keyboardType: TextInputType.number,
-                      decoration: const InputDecoration(
-                        border: OutlineInputBorder(),
-                        hintText: 'Phone number',
-                        labelText: 'Number',
-                      ),
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Number is required';
-                        } else {
-                          return null;
-                        }
-                      },
+                      labelText: "Number",
                     ),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.end,
@@ -177,7 +141,7 @@ class _EditStudentState extends State<EditStudent> {
                             if (_formkey.currentState!.validate()) {
                               onEditSaveButton(context);
                               Navigator.of(context).push(MaterialPageRoute(
-                                builder: (context) => HomeScreen(),
+                                builder: (context) => const HomeScreen(),
                               ));
                             }
                           },
@@ -195,7 +159,7 @@ class _EditStudentState extends State<EditStudent> {
   }
 
   Future<void> onEditSaveButton(ctx) async {
-    var photoPath = _photo == null ? widget.image : _photo!.path;
+    var photoPath = context.read<WidgetFunctionProvider>().photo ?? widget.image;
     final studentmodel = StudentModel(
       name: _nameOfStudent.text,
       age: _ageOfStudent.text,
@@ -221,17 +185,5 @@ class _EditStudentState extends State<EditStudent> {
         .editList(widget.index, studentmodel);
   }
 
-  File? _photo;
-  Future<void> getPhoto() async {
-    final photo = await ImagePicker().pickImage(source: ImageSource.gallery);
-    if (photo == null) {
-      return;
-    } else {
-      setState(
-        () {
-          _photo = File(photo.path);
-        },
-      );
-    }
-  }
+
 }

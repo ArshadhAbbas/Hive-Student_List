@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/adapters.dart';
 import 'package:hive_project/home_screen.dart';
+import 'package:hive_project/provider/photo_provider.dart.dart';
+import 'package:hive_project/provider/widget_provider.dart';
 import 'package:provider/provider.dart';
 
 import 'database/db_functions/db_function_provider.dart';
@@ -22,9 +24,9 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
-        ChangeNotifierProvider(
-          create: (context) => StudentProvider(),
-        ),
+        ChangeNotifierProvider(create: (context) => StudentProvider()),
+        ChangeNotifierProvider(create: (context) => WidgetProvider()),
+        ChangeNotifierProvider(create: (context) => WidgetFunctionProvider(),)
       ],
       child: MaterialApp(
         theme: ThemeData(
